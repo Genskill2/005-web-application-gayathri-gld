@@ -1,7 +1,11 @@
 import datetime
+
 from flask import Blueprint
+
 from flask import render_template, request, redirect, url_for, jsonify
+
 from flask import g
+
 from . import db
 bp = Blueprint("pets", "pets", url_prefix="")
 def format_date(d):
@@ -14,7 +18,6 @@ def format_date(d):
 @bp.route("/search/<field>/<value>")
 def search(field, value):
     # TBD
-    return ""
     conn = db.get_db()
     cursor = conn.cursor()
     oby = request.args.get("order_by", "id") # TODO. This is currently not used. 
@@ -25,8 +28,6 @@ def search(field, value):
         cursor.execute(f"select p.id, p.name, p.bought, p.sold, s.name from pet p, animal s where p.species = s.id and p.id in (select tp.pet from tags_pets tp, tag t where tp.tag = t.id and t.name=?) order by p.{oby} desc",(value,))
     pets = cursor.fetchall()
     return render_template('search.html', pets = pets,field=field, value=value, order="desc" if order=="asc" else "asc")
-
-
 @bp.route("/")
 def dashboard():
     conn = db.get_db()
@@ -34,14 +35,11 @@ def dashboard():
     oby = request.args.get("order_by", "id") # TODO. This is currently not used. 
     order = request.args.get("order", "asc")
     if order == "asc":
-        cursor.execute(f"select p.id, p.name, p.bought, p.sold, s.name from pet p, animal s where p.species = s.id order by p.id")
         cursor.execute(f"select p.id, p.name, p.bought, p.sold, s.name from pet p, animal s where p.species = s.id order by p.{oby}")
     else:
-        cursor.execute(f"select p.id, p.name, p.bought, p.sold, s.name from pet p, animal s where p.species = s.id order by p.id desc")
         cursor.execute(f"select p.id, p.name, p.bought, p.sold, s.name from pet p, animal s where p.species = s.id order by p.{oby} desc")
     pets = cursor.fetchall()
     return render_template('index.html', pets = pets, order="desc" if order=="asc" else "asc")
-
 @bp.route("/<pid>")
 def pet_info(pid): 
     conn = db.get_db()
